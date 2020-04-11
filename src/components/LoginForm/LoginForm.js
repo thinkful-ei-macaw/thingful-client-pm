@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import TokenService from '../../services/token-service'
+import AuthService from '../../services/auth-service'
 import { Button, Input } from '../Utils/Utils'
 
 export default class LoginForm extends Component {
@@ -13,13 +14,22 @@ export default class LoginForm extends Component {
     ev.preventDefault()
     const { user_name, password } = ev.target
 
-    TokenService.saveAuthToken(
-      TokenService.makeBasicAuthToken(user_name.value, password.value)
-    )
+    AuthService.login(user_name.value, password.value)
+      .then(data => {
+        
+        // Save the received token
+        TokenService.saveAuthToken( data.authToken )
+        this.props.onLoginSuccess()
+
+      })
+      .catch(err => {
+        this.setState({
+          error: err.error
+        })
+      })
 
     user_name.value = ''
     password.value = ''
-    this.props.onLoginSuccess()
   }
 
   render() {
